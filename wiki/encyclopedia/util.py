@@ -1,3 +1,4 @@
+import random
 import re
 
 from django.core.files.base import ContentFile
@@ -35,3 +36,11 @@ def get_entry(title):
         return f.read().decode("utf-8")
     except FileNotFoundError:
         return None
+
+def random_page():
+    """
+    Returns the name of a random encyclopedia entry.
+    """
+    entries = list_entries()
+    randint = random.randrange(len(entries))
+    return entries[randint]
