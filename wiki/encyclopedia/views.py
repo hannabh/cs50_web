@@ -23,11 +23,14 @@ def entry(request, title):
 
 def search(request):
     query = request.GET['q']
-    if query in util.list_entries():
+    entries = util.list_entries()
+    if query in entries:
         return HttpResponseRedirect(reverse("wiki:entry", kwargs={"title": query}))
     else:
+        search_results = [title for title in entries if query.lower() in title.lower()]
         return render(request, "encyclopedia/search.html", {
             "query": query,
+            "search_results": search_results
         })
     
 def random_page(request):
