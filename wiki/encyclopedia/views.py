@@ -9,8 +9,11 @@ from django import forms
 from . import util
 
 class NewEntryForm(forms.Form):
-    page_title= forms.CharField(label="Page title") 
-    page_content = forms.CharField(widget=forms.Textarea, label="Page content in Markdown format")
+    title= forms.CharField(label="Page title") 
+    content = forms.CharField(widget=forms.Textarea, label="Page content in Markdown format")
+
+class EditEntryForm(forms.Form):
+    content = forms.CharField(widget=forms.Textarea, label="Page content in Markdown format")
 
 def index(request):
     return render(request, "encyclopedia/index.html", {
@@ -42,23 +45,38 @@ def new(request):
     if request.method == "POST":
         form = NewEntryForm(request.POST)  # Save the data submitted by the user as a form
         if form.is_valid():
-            page_title = form.cleaned_data["page_title"]
-            if page_title in util.list_entries():
+            title = form.cleaned_data["title"]
+            if title in util.list_entries():
                 return render(request, "encyclopedia/error.html", {
-                    "page_title": page_title
+                    "title": title
                 })
             else:
-                page_content = form.cleaned_data["page_content"]
-                with open(f'./entries/{page_title}.md', 'w') as file:  # Save to disk
-                    file.write(page_content)
-                return HttpResponseRedirect(reverse("wiki:entry", kwargs={"title": page_title}))
+                content = form.cleaned_data["content"]
+                with open(f'./entries/{title}.md', 'w') as file:  # Save to disk
+                    file.write(content)
+                return HttpResponseRedirect(reverse("wiki:entry", kwargs={"title": title}))
 
     return render(request, "encyclopedia/new.html", {
         "form": NewEntryForm()
     })
 
-def error(request, page_title):
-    return HttpResponseRedirect(reverse("wiki:error", kwargs={"page_title": page_title}))
+def error(request, title):
+    return HttpResponseRedirect(reverse("wiki:error", kwargs={"title": title}))
+
+def edit(request, title):
+    if request.method == "POST":
+        form = EditEntryForm(request.POST)
+        if form.is_valid():
+            content = form.cleaned_data["content"]
+            with open(f'./entries/{title}.md', 'w') as file:
+                file.write(content)
+            return HttpResponseRedirect(reverse("wiki:entry", kwargs={"title": title}))
+    
+    content = util.get_entry(title)
+    return render(request, "encyclopedia/edit.html", {
+        "title": title,
+        "form": EditEntryForm(initial={"content": content}),
+    })
 
 def random_page(request):
     entries = util.list_entries()

@@ -9,5 +9,6 @@
         <h3>Error: Requested page not found.</h3>
     {% else %}
         {{  content | safe }}
+        <a href="{% url 'wiki:edit' title=title %}">Edit entry</a>
     {% endif %}
 {% endblock %}
