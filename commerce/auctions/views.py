@@ -3,12 +3,32 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django import forms
 
-from .models import User
+from .models import User, Listing
+
+
+class NewListingForm(forms.Form):
+    CATEGORIES = [
+    (None, ''),
+    ('FASHION', 'Fashion'),
+    ('TOYS', 'Toys'),
+    ('HOME', 'Home'),
+    ('ELECTRONICS', 'Electronics'),
+    ('BOOKS', 'Books'),
+    ]
+
+    title= forms.CharField(label="Title", max_length=64) 
+    description= forms.CharField(label="Description", max_length=255, widget=forms.Textarea()) 
+    starting_bid = forms.DecimalField(label="Starting Bid (£)", min_value=0, decimal_places=2, max_digits=6)
+    image_url = forms.URLField(label="Image URL (optional)", required=False)
+    category = forms.ChoiceField(choices=CATEGORIES, label="Category (optional)", required=False)
 
 
 def index(request):
-    return render(request, "auctions/index.html")
+    return render(request, "auctions/index.html", {
+        "listings": Listing.objects.all()
+    })
 
 
 def login_view(request):
@@ -61,3 +81,22 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "auctions/register.html")
+
+def create_listing(request):
+    if request.method == "POST":
+        form = NewListingForm(request.POST)
+        if form.is_valid():
+            title = form.cleaned_data["title"]
+            description = form.cleaned_data["description"]
+            starting_bid = form.cleaned_data["starting_bid"]
+            image_url = form.cleaned_data["image_url"]
+            category = form.cleaned_data["category"]
+
+            listing = Listing(title=title, description=description, starting_bid=starting_bid, image_url=image_url, category=category)
+            listing.save()
+
+            return HttpResponseRedirect(reverse("index"))  # TODO redirect to new listing page
+
+    return render(request, "auctions/create_listing.html", {
+        "form": NewListingForm()
+    })
