@@ -1,0 +1,18 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+<h2>{{ listing.title }}</h2>
+{{ listing.category }}
+<p>{{ listing.description }}</p>
+
+{% if listing.image_url %}
+<img src="{{ listing.image_url }}" alt="Image of {{ listing.title  }}">
+{% endif %}
+
+{% if listing.current_bid %}
+<p>Current price: £{{  listing.current_bid  }}</p>
+{% else %}
+<p>Starting bid: £{{  listing.starting_bid  }}</p>
+{% endif %}
+
+{% endblock %}

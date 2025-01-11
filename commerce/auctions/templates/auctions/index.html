@@ -5,12 +5,18 @@
       <div class="row">
         {% for listing in listings %}
         <div class="col-3">
-          <a href="#" class="thumbnail">
-            <img src="{{ listing.image_url }}" alt="Image of {{ listing.title  }}">
+          <a href="{% url 'listing' id=listing.id %}" class="thumbnail">
+            {% if listing.image_url %}
+              <img src="{{ listing.image_url }}" alt="Image of {{ listing.title  }}">
+            {% endif %}
             <div class="caption">
                 <h3>{{  listing.title  }}</h3>
-                <p>£{{  listing.starting_bid  }}</p>
-                <p>{{  listing.description  }}</p>
+                {% if listing.current_bid %}
+                  <p>£{{  listing.current_bid  }}</p>
+                {% else %}
+                  <p>£{{  listing.starting_bid  }}</p>
+                {% endif %}
+                  <p>{{  listing.description  }}</p>
              </div>
           </a>
         </div>
