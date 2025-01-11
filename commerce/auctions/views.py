@@ -5,19 +5,10 @@ from django.shortcuts import render
 from django.urls import reverse
 from django import forms
 
-from .models import User, Listing
+from .models import CATEGORIES, User, Listing
 
 
 class NewListingForm(forms.Form):
-    CATEGORIES = [
-    (None, ''),
-    ('FASHION', 'Fashion'),
-    ('TOYS', 'Toys'),
-    ('HOME', 'Home'),
-    ('ELECTRONICS', 'Electronics'),
-    ('BOOKS', 'Books'),
-    ]
-
     title= forms.CharField(label="Title", max_length=64) 
     description= forms.CharField(label="Description", max_length=255, widget=forms.Textarea()) 
     starting_bid = forms.DecimalField(label="Starting Bid (£)", min_value=0, decimal_places=2, max_digits=6)
