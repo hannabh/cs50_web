@@ -1,7 +1,10 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    <h2>Active Listings</h2>
+    <h2>Active Listings: {{ category }}</h2>
+    {% if not listings %}
+    No listings found in category.
+    {% else %}
       <div class="row">
         {% for listing in listings %}
         <div class="col-3">
@@ -28,4 +31,5 @@
         </div>
         {% endfor %}
       </div>
+      {% endif %}
 {% endblock %}

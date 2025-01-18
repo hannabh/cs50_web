@@ -1,9 +1,9 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    <h2>Active Listings</h2>
+    <h2>Watchlist</h2>
       <div class="row">
-        {% for listing in listings %}
+        {% for listing in watchlist_listings %}
         <div class="col-3">
           <a href="{% url 'listing' id=listing.id %}" class="thumbnail">
             {% if listing.image_url %}
@@ -13,9 +13,6 @@
                 <h3>{{  listing.title  }}</h3>
                 {% if listing.category %}
                 <span class="badge badge-pill badge-info">{{ listing.category }}</span>
-                {% endif %}
-                {% if listing.watchlist %}
-                <span class="badge badge-pill badge-primary">Watchlist</span>
                 {% endif %}
                 {% if listing.current_bid %}
                   <p>£{{  listing.current_bid  }}</p>

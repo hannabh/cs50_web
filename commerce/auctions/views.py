@@ -97,3 +97,37 @@ def listing(request, id):
     return render(request, "auctions/listing.html", {
         "listing": listing,
     })
+
+def watchlist(request):
+    watchlist_listings = Listing.objects.all().filter(watchlist=True)
+    return render(request, "auctions/watchlist.html", {
+        "watchlist_listings": watchlist_listings,
+    })
+
+def watchlist_add(request, id):
+    if request.method == "POST":
+        listing = Listing.objects.get(id=id)
+        listing.watchlist = True
+        listing.save()
+        return HttpResponseRedirect(reverse("listing", args=(id,)))
+
+def watchlist_remove(request, id):
+    if request.method == "POST":
+        listing = Listing.objects.get(id=id)
+        listing.watchlist = False
+        listing.save()
+        return HttpResponseRedirect(reverse("listing", args=(id,)))
+
+def categories(request):
+     categories = list(CATEGORIES.values())
+     categories.remove("")
+     return render(request, "auctions/categories.html", {
+        "categories": categories
+    })
+
+def category_listings(request, category):
+    category_listings = Listing.objects.all().filter(category=category)
+    return render(request, "auctions/category.html", {
+        "category": category,
+        "listings": category_listings,
+    })
