@@ -1,4 +1,5 @@
 {% extends "auctions/layout.html" %}
+{% load bootstrap %}
 
 {% block body %}
 <h2>{{ listing.title }}</h2>
@@ -8,7 +9,7 @@
 {% endif %}
 
 {% if listing.watchlist %}
-<span class="badge badge-pill badge-primary">Watchlist</span>
+<span class="badge badge-pill badge-secondary">Watchlist</span>
 {% endif %}
 
 <p>{{ listing.description }}</p>
@@ -17,24 +18,37 @@
 <img src="{{ listing.image_url }}" alt="Image of {{ listing.title  }}">
 {% endif %}
 
-{% if listing.current_bid %}
-<p>Current price: £{{  listing.current_bid  }}</p>
+<p>Listed by: {{ listing.listed_by }}</p>
+
+{% if highest_bid %}
+<p><b>Price: </b>£{{  highest_bid.bid  }}</p>
+<p>{{ bids }} bid(s). Highest bidder: {{ highest_bid.bidder.username }}</p>
 {% else %}
-<p>Starting bid: £{{  listing.starting_bid  }}</p>
+<h4>Price: £{{  listing.starting_bid  }}</h4>
+<p>0 bids</p>
 {% endif %}
 
+
 {% if user.is_authenticated %}
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ form|bootstrap }}
+        <input class="btn btn-primary" type="submit" value="Make a bid ">
+    </form> 
+
+    <br>
     {% if listing.watchlist %}
     <form action="{% url 'watchlist_remove' listing.id %}" method="post">
         {% csrf_token %}
-        <input class="btn btn-primary" type="submit" value="Remove from Watchlist">
+        <input class="btn btn-secondary btn-sm" type="submit" value="Remove from Watchlist">
     </form>
     {% else %}
     <form action="{% url 'watchlist_add' listing.id %}" method="post">
         {% csrf_token %}
-        <input class="btn btn-primary" type="submit" value="Add to Watchlist">
+        <input class="btn btn-secondary btn-sm" type="submit" value="Add to Watchlist">
     </form>
     {% endif %}
+
 {% endif %}
 
 {% endblock %}

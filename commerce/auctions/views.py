@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django import forms
 
-from .models import CATEGORIES, User, Listing
+from .models import CATEGORIES, User, Listing, Bid
 
 
 class NewListingForm(forms.Form):
@@ -15,6 +15,9 @@ class NewListingForm(forms.Form):
     image_url = forms.URLField(label="Image URL (optional)", required=False)
     category = forms.ChoiceField(choices=CATEGORIES, label="Category (optional)", required=False)
 
+class BidForm(forms.Form):
+    bid = forms.DecimalField(label="Bid (£)", min_value=0, decimal_places=2, max_digits=6)
+    # TODO: validation
 
 def index(request):
     return render(request, "auctions/index.html", {
@@ -83,7 +86,7 @@ def create_listing(request):
             image_url = form.cleaned_data["image_url"]
             category = form.cleaned_data["category"]
 
-            listing = Listing(title=title, description=description, starting_bid=starting_bid, image_url=image_url, category=category)
+            listing = Listing(title=title, description=description, starting_bid=starting_bid, image_url=image_url, category=category, listed_by=request.user)
             listing.save()
 
             return HttpResponseRedirect(reverse("index"))  # TODO redirect to new listing page
@@ -94,8 +97,21 @@ def create_listing(request):
 
 def listing(request, id):
     listing = Listing.objects.get(id=id)
+
+    if request.method == "POST":
+        form = BidForm(request.POST)
+        if form.is_valid():
+            bid_value = form.cleaned_data["bid"]
+            new_bid = Bid(listing=listing, bidder=request.user, bid=bid_value)
+            new_bid.save()
+        
+    bids = Bid.objects.filter(listing=id)
+    highest_bid = bids.order_by('-bid').first() # returns None if no bids
     return render(request, "auctions/listing.html", {
         "listing": listing,
+        "form": BidForm(),
+        "bids": bids.count(),
+        "highest_bid": highest_bid,
     })
 
 def watchlist(request):
