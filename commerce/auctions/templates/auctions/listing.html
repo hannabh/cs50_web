@@ -30,7 +30,7 @@
 
 
 {% if user.is_authenticated %}
-    <form action="" method="post">
+    <form action="{% url 'listing' listing.id %}" method="post">
         {% csrf_token %}
         {{ form|bootstrap }}
         <input class="btn btn-primary" type="submit" value="Make a bid ">

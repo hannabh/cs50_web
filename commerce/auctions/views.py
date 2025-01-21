@@ -4,6 +4,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django import forms
+from decimal import Decimal
+from django.core.exceptions import ValidationError
 
 from .models import CATEGORIES, User, Listing, Bid
 
@@ -11,14 +13,34 @@ from .models import CATEGORIES, User, Listing, Bid
 class NewListingForm(forms.Form):
     title= forms.CharField(label="Title", max_length=64) 
     description= forms.CharField(label="Description", max_length=255, widget=forms.Textarea()) 
-    starting_bid = forms.DecimalField(label="Starting Bid (£)", min_value=0, decimal_places=2, max_digits=6)
+    starting_bid = forms.DecimalField(label="Starting Bid (£)", min_value=0, decimal_places=2, max_digits=8)
     image_url = forms.URLField(label="Image URL (optional)", required=False)
     category = forms.ChoiceField(choices=CATEGORIES, label="Category (optional)", required=False)
 
 class BidForm(forms.Form):
-    bid = forms.DecimalField(label="Bid (£)", min_value=0, decimal_places=2, max_digits=6)
-    # TODO: validation
+    bid = forms.DecimalField(label="Bid (£)", min_value=0, decimal_places=2, max_digits=8)
+   
+    def __init__(self, *args, **kwargs):
+        self.starting_bid = kwargs.pop('starting_bid')
+        self.highest_bid = kwargs.pop('highest_bid')
+        super(BidForm, self).__init__(*args, **kwargs)
 
+    def clean_bid(self):
+        bid = self.cleaned_data['bid']
+        
+        # Check that bid is greater than current highest bid
+        if self.highest_bid and bid <= Decimal(str(self.highest_bid)):
+            raise ValidationError(
+                f'Bid must be higher than the current highest bid of £{self.highest_bid}'
+            )
+        # Check that bid is at least minimum starting bid
+        if bid < Decimal(str(self.starting_bid)):
+            raise ValidationError(
+                f'Bid must be at least the starting bid of £{self.starting_bid}'
+            )
+            
+        return bid
+    
 def index(request):
     return render(request, "auctions/index.html", {
         "listings": Listing.objects.all()
@@ -97,19 +119,35 @@ def create_listing(request):
 
 def listing(request, id):
     listing = Listing.objects.get(id=id)
+    bids = Bid.objects.filter(listing=id)
+    highest_bid = bids.order_by('-bid').first()  # returns None if no bids
+    highest_bid_value = highest_bid.bid if highest_bid else None
 
     if request.method == "POST":
-        form = BidForm(request.POST)
-        if form.is_valid():
-            bid_value = form.cleaned_data["bid"]
-            new_bid = Bid(listing=listing, bidder=request.user, bid=bid_value)
-            new_bid.save()
+        form = BidForm(
+            request.POST,
+            starting_bid=listing.starting_bid,
+            highest_bid=highest_bid_value
+        )
         
-    bids = Bid.objects.filter(listing=id)
-    highest_bid = bids.order_by('-bid').first() # returns None if no bids
+        if form.is_valid():
+            new_bid = Bid(
+                listing=listing,
+                bidder=request.user,
+                bid=form.cleaned_data["bid"]
+            )
+            new_bid.save()
+            return HttpResponseRedirect(reverse("listing", args=(id,)))  # Redirect after successful bid
+    else:
+        # For GET requests, create a new form with the validation parameters
+        form = BidForm(
+            starting_bid=listing.starting_bid,
+            highest_bid=highest_bid_value
+        )
+    
     return render(request, "auctions/listing.html", {
         "listing": listing,
-        "form": BidForm(),
+        "form": form,  # Pass the form with any validation errors
         "bids": bids.count(),
         "highest_bid": highest_bid,
     })

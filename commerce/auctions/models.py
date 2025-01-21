@@ -24,7 +24,7 @@ class Listing(models.Model):
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=64)
     description = models.CharField(max_length=255)
-    starting_bid = models.DecimalField(decimal_places=2, max_digits=6, validators=[MinValueValidator(0)])
+    starting_bid = models.DecimalField(decimal_places=2, max_digits=8, validators=[MinValueValidator(0)])
     image_url = models.URLField(blank=True, null=True)
     category = models.CharField(max_length=64, choices=CATEGORIES, blank=True, null=True)
     watchlist = models.BooleanField(default=False)
@@ -38,7 +38,7 @@ class Listing(models.Model):
 class Bid(models.Model):
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE)
     bidder  = models.ForeignKey(User, on_delete=models.CASCADE)
-    bid = models.DecimalField(decimal_places=2, max_digits=6, validators=[MinValueValidator(0)])
+    bid = models.DecimalField(decimal_places=2, max_digits=8, validators=[MinValueValidator(0)])
 
 class Comment(models.Model):
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE)
