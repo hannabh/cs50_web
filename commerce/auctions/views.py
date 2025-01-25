@@ -7,7 +7,7 @@ from django import forms
 from decimal import Decimal
 from django.core.exceptions import ValidationError
 
-from .models import CATEGORIES, User, Listing, Bid
+from .models import CATEGORIES, User, Listing, Bid, Comment
 
 
 class NewListingForm(forms.Form):
@@ -40,7 +40,7 @@ class BidForm(forms.Form):
             )
             
         return bid
-    
+
 def index(request):
     return render(request, "auctions/index.html", {
         "listings": Listing.objects.all()
@@ -121,6 +121,7 @@ def listing(request, id):
     bids = Bid.objects.filter(listing=id)
     highest_bid = bids.order_by('-bid').first()  # returns None if no bids
     highest_bid_value = highest_bid.bid if highest_bid else None
+    comments = Comment.objects.filter(listing=id)
 
     if request.method == "POST":
         form = BidForm(
@@ -149,6 +150,7 @@ def listing(request, id):
         "form": form,  # Pass the form with any validation errors
         "bids": bids.count(),
         "highest_bid": highest_bid,
+        "comments": comments,
     })
 
 def watchlist(request):
@@ -184,3 +186,11 @@ def category_listings(request, category):
         "category": category,
         "listings": category_listings,
     })
+
+def add_comment(request, id):
+    if request.method == "POST":
+        listing = Listing.objects.get(id=id)
+        comment = request.POST.get('comment')
+        new_comment = Comment(listing=listing, user=request.user, comment=comment)
+        new_comment.save()
+        return HttpResponseRedirect(reverse("listing", args=(id,)))

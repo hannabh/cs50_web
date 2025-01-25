@@ -49,4 +49,25 @@
 
 {% endif %}
 
+<hr>
+<h4>Comments</h4>
+{% for comment in comments %}
+<h><b>{{ comment.user }}: </b>{{ comment.comment }}<br></h>
+{% endfor %}
+
+{% if user.is_authenticated %}
+<br>
+<form action="{% url 'add_comment' listing.id %}" method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col">
+            <input type="text" name="comment" class="form-control" placeholder="Comment">
+        </div>
+        <div class="col">
+            <button class="btn btn-primary" type="submit">Add Comment</button>
+        </div>
+    </div>
+</form>
+{% endif %}
+
 {% endblock %}
