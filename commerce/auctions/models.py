@@ -32,6 +32,10 @@ class Listing(models.Model):
     listed_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="listed_by")
     winner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="winner", blank=True, null=True)
 
+    def get_current_price(self):
+        highest_bid = self.bid_set.order_by('-bid').first()  # bid_set is automatically created
+        return highest_bid.bid if highest_bid else self.starting_bid
+
     def __str__(self):
         return f"{self.id}: {self.title}"
 

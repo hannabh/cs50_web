@@ -19,12 +19,10 @@
 {% endif %}
 
 <p>Listed by: {{ listing.listed_by }}</p>
-
+<p><b>Price: </b>£{{  listing.get_current_price  }}</p>
 {% if highest_bid %}
-<p><b>Price: </b>£{{  highest_bid.bid  }}</p>
 <p>{{ bids }} bid(s). Highest bidder: {{ highest_bid.bidder.username }}</p>
 {% else %}
-<h4>Price: £{{  listing.starting_bid  }}</h4>
 <p>0 bids</p>
 {% endif %}
 

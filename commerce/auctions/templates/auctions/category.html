@@ -20,12 +20,8 @@
                 {% if listing.watchlist %}
                 <span class="badge badge-pill badge-primary">Watchlist</span>
                 {% endif %}
-                {% if listing.current_bid %}
-                  <p>£{{  listing.current_bid  }}</p>
-                {% else %}
-                  <p>£{{  listing.starting_bid  }}</p>
-                {% endif %}
-                  <p>{{  listing.description  }}</p>
+                <p>£{{  listing.current_price  }}</p>
+                <p>{{  listing.description  }}</p>
              </div>
           </a>
         </div>

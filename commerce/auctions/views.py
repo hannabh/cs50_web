@@ -110,8 +110,7 @@ def create_listing(request):
 
             listing = Listing(title=title, description=description, starting_bid=starting_bid, image_url=image_url, category=category, listed_by=request.user)
             listing.save()
-
-            return HttpResponseRedirect(reverse("index"))  # TODO redirect to new listing page
+            return HttpResponseRedirect(reverse("listing", args=(listing.id,)))
 
     return render(request, "auctions/create_listing.html", {
         "form": NewListingForm()
