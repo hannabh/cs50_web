@@ -8,7 +8,7 @@
 <span class="badge badge-pill badge-info">{{ listing.category }}</span>
 {% endif %}
 
-{% if listing.watchlist %}
+{% if user in listing.watchers.all %}
 <span class="badge badge-pill badge-secondary">Watchlist</span>
 {% endif %}
 
@@ -38,7 +38,7 @@
         </form> 
 
         <br>
-        {% if listing.watchlist %}
+        {% if user in listing.watchers.all %}
         <form action="{% url 'watchlist_remove' listing.id %}" method="post">
             {% csrf_token %}
             <input class="btn btn-secondary btn-sm" type="submit" value="Remove from Watchlist">

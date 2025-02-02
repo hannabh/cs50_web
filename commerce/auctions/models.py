@@ -22,10 +22,10 @@ class Listing(models.Model):
     starting_bid = models.DecimalField(decimal_places=2, max_digits=8, validators=[MinValueValidator(0)])
     image_url = models.URLField(blank=True, null=True)
     category = models.CharField(max_length=64, choices=CATEGORIES, blank=True, null=True)
-    watchlist = models.BooleanField(default=False)
     open = models.BooleanField(default=True)
     listed_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="listed_by")
     winner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="winner", blank=True, null=True)
+    watchers = models.ManyToManyField(User, blank=True, null=True, related_name='watchlist')
 
     def get_current_price(self):
         highest_bid = self.bid_set.order_by('-bid').first()  # bid_set is automatically created

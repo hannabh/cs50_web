@@ -20,7 +20,7 @@
                 {% if listing.watchlist %}
                 <span class="badge badge-pill badge-primary">Watchlist</span>
                 {% endif %}
-                <p>£{{  listing.current_price  }}</p>
+                <p>£{{  listing.get_current_price  }}</p>
                 <p>{{  listing.description  }}</p>
              </div>
           </a>

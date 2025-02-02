@@ -1,11 +1,12 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django import forms
 from decimal import Decimal
 from django.core.exceptions import ValidationError
+from django.contrib.auth.decorators import login_required
 
 from .models import CATEGORIES, User, Listing, Bid, Comment
 
@@ -98,6 +99,7 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
 
+@login_required
 def create_listing(request):
     if request.method == "POST":
         form = NewListingForm(request.POST)
@@ -153,24 +155,27 @@ def listing(request, id):
         "comments": comments,
     })
 
+@login_required
 def watchlist(request):
-    watchlist_listings = Listing.objects.all().filter(watchlist=True)
+    watched_listings = request.user.watchlist.all()
     return render(request, "auctions/watchlist.html", {
-        "watchlist_listings": watchlist_listings,
+        "watchlist_listings": watched_listings,
     })
 
+@login_required
 def watchlist_add(request, id):
     if request.method == "POST":
         listing = Listing.objects.get(id=id)
-        listing.watchlist = True
-        listing.save()
+        listing.watchers.add(request.user)
+        #listing.save()
         return HttpResponseRedirect(reverse("listing", args=(id,)))
 
+@login_required
 def watchlist_remove(request, id):
     if request.method == "POST":
         listing = Listing.objects.get(id=id)
-        listing.watchlist = False
-        listing.save()
+        listing.watchers.remove(request.user)
+        #listing.save()
         return HttpResponseRedirect(reverse("listing", args=(id,)))
 
 def categories(request):
@@ -187,6 +192,7 @@ def category_listings(request, category):
         "listings": category_listings,
     })
 
+@login_required
 def add_comment(request, id):
     if request.method == "POST":
         listing = Listing.objects.get(id=id)
@@ -194,7 +200,8 @@ def add_comment(request, id):
         new_comment = Comment(listing=listing, user=request.user, comment=comment)
         new_comment.save()
         return HttpResponseRedirect(reverse("listing", args=(id,)))
-    
+
+@login_required
 def close_listing(request, id):
     if request.method == "POST":
         listing = Listing.objects.get(id=id)
