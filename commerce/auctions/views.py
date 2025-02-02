@@ -194,3 +194,11 @@ def add_comment(request, id):
         new_comment = Comment(listing=listing, user=request.user, comment=comment)
         new_comment.save()
         return HttpResponseRedirect(reverse("listing", args=(id,)))
+    
+def close_listing(request, id):
+    if request.method == "POST":
+        listing = Listing.objects.get(id=id)
+        listing.open = False
+        listing.winner = listing.get_highest_bidder()
+        listing.save()
+        return HttpResponseRedirect(reverse("listing", args=(id,)))

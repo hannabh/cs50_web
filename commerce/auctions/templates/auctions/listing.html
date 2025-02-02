@@ -19,55 +19,76 @@
 {% endif %}
 
 <p>Listed by: {{ listing.listed_by }}</p>
-<p><b>Price: </b>£{{  listing.get_current_price  }}</p>
-{% if highest_bid %}
-<p>{{ bids }} bid(s). Highest bidder: {{ highest_bid.bidder.username }}</p>
-{% else %}
-<p>0 bids</p>
-{% endif %}
 
+{% if listing.open %}
 
-{% if user.is_authenticated %}
-    <form action="{% url 'listing' listing.id %}" method="post">
-        {% csrf_token %}
-        {{ form|bootstrap }}
-        <input class="btn btn-primary" type="submit" value="Make a bid ">
-    </form> 
-
-    <br>
-    {% if listing.watchlist %}
-    <form action="{% url 'watchlist_remove' listing.id %}" method="post">
-        {% csrf_token %}
-        <input class="btn btn-secondary btn-sm" type="submit" value="Remove from Watchlist">
-    </form>
+    <p><b>Price: </b>£{{  listing.get_current_price  }}</p>
+    {% if highest_bid %}
+    <p>{{ bids }} bid(s). Highest bidder: {{ highest_bid.bidder.username }}</p>
     {% else %}
-    <form action="{% url 'watchlist_add' listing.id %}" method="post">
+    <p>0 bids</p>
+    {% endif %}
+
+
+    {% if user.is_authenticated %}
+        <form action="{% url 'listing' listing.id %}" method="post">
+            {% csrf_token %}
+            {{ form|bootstrap }}
+            <input class="btn btn-primary" type="submit" value="Make a bid ">
+        </form> 
+
+        <br>
+        {% if listing.watchlist %}
+        <form action="{% url 'watchlist_remove' listing.id %}" method="post">
+            {% csrf_token %}
+            <input class="btn btn-secondary btn-sm" type="submit" value="Remove from Watchlist">
+        </form>
+        {% else %}
+        <form action="{% url 'watchlist_add' listing.id %}" method="post">
+            {% csrf_token %}
+            <input class="btn btn-secondary btn-sm" type="submit" value="Add to Watchlist">
+        </form>
+        {% endif %}
+
+    {% endif %}
+
+    <hr>
+    <h4>Comments</h4>
+    {% for comment in comments %}
+    <h><b>{{ comment.user }}: </b>{{ comment.comment }}<br></h>
+    {% endfor %}
+
+    {% if user.is_authenticated %}
+    <br>
+    <form action="{% url 'add_comment' listing.id %}" method="post">
         {% csrf_token %}
-        <input class="btn btn-secondary btn-sm" type="submit" value="Add to Watchlist">
+        <div class="row">
+            <div class="col">
+                <input type="text" name="comment" class="form-control" placeholder="Comment">
+            </div>
+            <div class="col">
+                <button class="btn btn-primary" type="submit">Add Comment</button>
+            </div>
+        </div>
     </form>
     {% endif %}
 
+    <br>
+    {% if user == listing.listed_by %}  
+    <form action="{% url 'close_listing' listing.id %}" method="post">
+        {% csrf_token %}
+        <input class="btn btn-danger" type="submit" value="Close Listing">
+    </form>
+    {% endif %}
+
+{% else %}
+    <p><b>Listing closed</b></p>
+    {% if listing.winner == user %}
+    <p>You won the auction for £{{ listing.get_current_price }}</p>
+    {% else %}
+    <p>Auction won by {{ listing.winner }} for £{{ listing.get_current_price }}</p>
 {% endif %}
 
-<hr>
-<h4>Comments</h4>
-{% for comment in comments %}
-<h><b>{{ comment.user }}: </b>{{ comment.comment }}<br></h>
-{% endfor %}
-
-{% if user.is_authenticated %}
-<br>
-<form action="{% url 'add_comment' listing.id %}" method="post">
-    {% csrf_token %}
-    <div class="row">
-        <div class="col">
-            <input type="text" name="comment" class="form-control" placeholder="Comment">
-        </div>
-        <div class="col">
-            <button class="btn btn-primary" type="submit">Add Comment</button>
-        </div>
-    </div>
-</form>
 {% endif %}
 
 {% endblock %}
