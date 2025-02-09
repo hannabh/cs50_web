@@ -1,3 +1,22 @@
 textarea {
     min-height: 400px;
 }
+
+#mailbox-item {
+    border-style: solid;
+    display: flex;
+    padding: 10px;
+}
+
+#sender {
+    font-weight: bold;
+}
+
+#subject {
+    margin-left: 20px;
+}
+
+#timestamp {
+    color: grey;
+    margin-left: auto;
+}
