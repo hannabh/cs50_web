@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
   load_mailbox('inbox');
 });
 
-function compose_email() {
+function compose_email(recipients='', subject='', body='') {
 
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
@@ -21,9 +21,9 @@ function compose_email() {
   document.querySelector('#compose-view').style.display = 'block';
 
   // Clear out composition fields
-  document.querySelector('#compose-recipients').value = '';
-  document.querySelector('#compose-subject').value = '';
-  document.querySelector('#compose-body').value = '';
+  document.querySelector('#compose-recipients').value = recipients;
+  document.querySelector('#compose-subject').value = subject;
+  document.querySelector('#compose-body').value = body;
 }
 
 function load_mailbox(mailbox) {
@@ -128,6 +128,20 @@ function view_email(id, mailbox) {
 
         <p>${email.body}</p>
         `
+
+        // Add reply button for inbox emails
+        if (mailbox == 'inbox') {
+          const reply_btn = document.createElement('button');
+          reply_btn.textContent = 'Reply';
+          reply_btn.className = "btn btn-primary";
+          reply_btn.addEventListener('click', () => compose_email(
+            recipients=email.sender,
+            subject=`Re: ${email.subject}`,
+            body=`On ${email.timestamp}, ${email.sender} wrote: ${email.body}`,
+          )
+        );
+          document.querySelector('#email-content-view').append(reply_btn);
+        };
 
         // Add archive button for inbox emails
         if (mailbox == 'inbox') {
