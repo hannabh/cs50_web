@@ -8,6 +8,10 @@ textarea {
     padding: 10px;
 }
 
+#mailbox-item.read{
+    background-color: #E5E6E5;
+}
+
 #sender {
     font-weight: bold;
 }
