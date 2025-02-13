@@ -45,7 +45,7 @@ function load_mailbox(mailbox) {
         // Create a new div element with email information
         const mailbox_item = document.createElement('div');
 
-        mailbox_item.id = 'mailbox-item'
+        mailbox_item.id = 'mailbox-item';
         // Add 'read' class if the email has been read
         if (email.read) {
           mailbox_item.classList.add('read');
@@ -55,10 +55,10 @@ function load_mailbox(mailbox) {
         sender.id = 'sender';
         sender.textContent = email.sender;
         const subject = document.createElement('span');
-        subject.id = 'subject'
+        subject.id = 'subject';
         subject.textContent = email.subject;
         const timestamp = document.createElement('span');
-        timestamp.id = 'timestamp'
+        timestamp.id = 'timestamp';
         timestamp.textContent = email.timestamp;
 
         mailbox_item.appendChild(sender);
@@ -67,7 +67,7 @@ function load_mailbox(mailbox) {
 
         // Add click event listener to mailbox item
         mailbox_item.addEventListener('click', function() {
-          view_email(email.id)
+          view_email(email.id, mailbox)
         });
 
         // Add new div to emails-view
@@ -105,7 +105,7 @@ function send_email(event) {
 });
 }
 
-function view_email(id) {
+function view_email(id, mailbox) {
     // Show email content view
     document.querySelector('#emails-view').style.display = 'none';
     document.querySelector('#email-content-view').style.display = 'block';
@@ -128,13 +128,51 @@ function view_email(id) {
 
         <p>${email.body}</p>
         `
-    });
 
-    // Mark email as read
-    fetch(`/emails/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify({
-          read: true
+        // Add archive button for inbox emails
+        if (mailbox == 'inbox') {
+          const archive_btn = document.createElement('button');
+          archive_btn.textContent = 'Archive';
+          archive_btn.className = "btn btn-primary";
+          archive_btn.addEventListener('click', () => archive_email(id));
+        document.querySelector('#email-content-view').append(archive_btn);
+        };
+
+        // Add unarchive button for archive emails
+        if (mailbox == 'archive') {
+          const unarchive_btn = document.createElement('button');
+          unarchive_btn.textContent = 'Unarchive';
+          unarchive_btn.className = "btn btn-primary";
+          unarchive_btn.addEventListener('click', () => unarchive_email(id));
+        document.querySelector('#email-content-view').append(unarchive_btn);
+        };
+      
+        // Mark email as read
+        fetch(`/emails/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+              read: true
+          })
+        })
+  });
+}
+
+function archive_email(id) {
+      fetch(`/emails/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            archived: true
+        })
       })
+      .then(response => load_mailbox('inbox'))
+}
+
+function unarchive_email(id) {
+  fetch(`/emails/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+        archived: false
     })
+  })
+  .then(response => load_mailbox('inbox'))
 }
