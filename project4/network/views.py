@@ -85,3 +85,12 @@ def new_post(request):
         return render(request, "network/new_post.html", {
             "form": form,
         })
+
+def profile(request, username):
+    user = User.objects.get(username=username)
+    return render(request, "network/profile.html", {
+        "user": user,
+        "posts": Post.objects.filter(user=user).order_by('-datetime'),
+    })
+
+# TODO: clicking on username in a post takes you to profile page
