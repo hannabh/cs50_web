@@ -12,7 +12,7 @@ class NewPostForm(forms.Form):
 
 def index(request):
     return render(request, "network/index.html", {
-        "posts": Post.objects.all().order_by('datetime')
+        "posts": Post.objects.all().order_by('-datetime')
     })
 
 def login_view(request):
@@ -88,9 +88,41 @@ def new_post(request):
 
 def profile(request, username):
     user = User.objects.get(username=username)
+    if user in request.user.profiles_following.all():
+        is_following = True
+    else:
+        is_following = False
+
     return render(request, "network/profile.html", {
-        "user": user,
+        "username": user.username,
+        "followers": user.followers.all(),
+        "following": user.profiles_following.all(),
+        "is_following": is_following,
         "posts": Post.objects.filter(user=user).order_by('-datetime'),
     })
 
-# TODO: clicking on username in a post takes you to profile page
+def follow(request, username):
+    if request.method == "POST":
+        user = User.objects.get(username=username)
+        request.user.profiles_following.add(user)
+        request.user.save()  # needed?
+    return render(request, "network/profile.html", {
+        "username": user.username,
+        "followers": user.followers.all(),
+        "following": user.profiles_following.all(),
+        "is_following": True,
+        "posts": Post.objects.filter(user=user).order_by('-datetime'),
+    })
+
+def unfollow(request, username):
+    if request.method == "POST":
+        user = User.objects.get(username=username)
+        request.user.profiles_following.remove(user)
+        request.user.save()  # needed?
+    return render(request, "network/profile.html", {
+        "username": user.username,
+        "followers": user.followers.all(),
+        "following": user.profiles_following.all(),
+        "is_following": False,
+        "posts": Post.objects.filter(user=user).order_by('-datetime'),
+    })
