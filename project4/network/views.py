@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django import forms
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 
 from .models import User, Post
 
@@ -12,9 +13,13 @@ class NewPostForm(forms.Form):
     content = forms.CharField(label="", widget=forms.Textarea)
 
 def index(request):
+    posts = Post.objects.all().order_by('-datetime')
+    paginator = Paginator(posts, 10) # Show 10 posts per page
+
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     return render(request, "network/index.html", {
-        "page_title": "All Posts",
-        "posts": Post.objects.all().order_by('-datetime')
+        "page_obj": page_obj,
     })
 
 def login_view(request):
@@ -68,7 +73,7 @@ def register(request):
     else:
         return render(request, "network/register.html")
 
-
+@login_required
 def new_post(request):
     # For POST requests, submit the form
     if request.method == "POST":
@@ -90,19 +95,28 @@ def new_post(request):
 
 def profile(request, username):
     user = User.objects.get(username=username)
-    if user in request.user.profiles_following.all():
-        is_following = True
-    else:
-        is_following = False
+    try:
+        if user in request.user.profiles_following.all():
+            is_following = True
+        else:
+            is_following = False
+    except:
+        is_following = None  # user not logged in
+    
+    posts = Post.objects.filter(user=user).order_by('-datetime')
+    paginator = Paginator(posts, 10) # Show 10 posts per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     return render(request, "network/profile.html", {
         "username": user.username,
         "followers": user.followers.all(),
         "following": user.profiles_following.all(),
         "is_following": is_following,
-        "posts": Post.objects.filter(user=user).order_by('-datetime'),
+        "page_obj": page_obj,
     })
 
+@login_required
 def follow(request, username):
     if request.method == "POST":
         user = User.objects.get(username=username)
@@ -116,6 +130,7 @@ def follow(request, username):
         "posts": Post.objects.filter(user=user).order_by('-datetime'),
     })
 
+@login_required
 def unfollow(request, username):
     if request.method == "POST":
         user = User.objects.get(username=username)
@@ -132,7 +147,10 @@ def unfollow(request, username):
 @login_required
 def following(request):
     followed_posts = Post.objects.filter(user__in=request.user.profiles_following.all()).order_by('-datetime')
-    return render(request, "network/index.html", {
-        "page_title": "Posts from users you follow",
-        "posts": followed_posts,
+    paginator = Paginator(followed_posts, 10) # Show 10 posts per page
+
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, "network/following.html", {
+        "page_obj": page_obj,
     })

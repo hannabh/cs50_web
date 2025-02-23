@@ -1,6 +1,6 @@
-{% extends "network/layout.html" %}
+{% extends "network/posts.html" %}
 
-{% block body %}
+{% block heading %}
 <h2>{{ username }}</h2>
 
 <p>Followers: {{ followers.count }}</p>
@@ -14,7 +14,7 @@
             <input class="btn btn-primary btn-sm" type="submit" value="Unfollow">
         </form>
         <br>
-    {% else %}
+    {% elif is_following == False %}
         <form action="{% url 'follow' username %}" method="post">
             {% csrf_token %}
             <input class="btn btn-primary btn-sm" type="submit" value="Follow">
@@ -23,13 +23,5 @@
     {% endif %}
 
 {% endif %}
-
-{% for post in posts %}
-<div class="border p-3 mb-3">
-    <p>{{ post.content }}</p>
-    <p id="datetime">{{ post.datetime }}</p>
-    <p>&#10084;{{ post.likes }}</p>        
-</div>
-{% endfor %}
 
 {% endblock %}
