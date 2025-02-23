@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django import forms
+from django.contrib.auth.decorators import login_required
 
 from .models import User, Post
 
@@ -12,6 +13,7 @@ class NewPostForm(forms.Form):
 
 def index(request):
     return render(request, "network/index.html", {
+        "page_title": "All Posts",
         "posts": Post.objects.all().order_by('-datetime')
     })
 
@@ -125,4 +127,12 @@ def unfollow(request, username):
         "following": user.profiles_following.all(),
         "is_following": False,
         "posts": Post.objects.filter(user=user).order_by('-datetime'),
+    })
+
+@login_required
+def following(request):
+    followed_posts = Post.objects.filter(user__in=request.user.profiles_following.all()).order_by('-datetime')
+    return render(request, "network/index.html", {
+        "page_title": "Posts from users you follow",
+        "posts": followed_posts,
     })
